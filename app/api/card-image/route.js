@@ -58,7 +58,7 @@ export async function GET(request) {
             overflow: "hidden",
           }}
         >
-          {/* 交易对信息 */}
+          {/* 交易对信息 - 使用圆润字体 */}
           <div
             style={{
               position: "absolute",
@@ -68,6 +68,7 @@ export async function GET(request) {
               fontWeight: "bold",
               color: "#ffffff",
               display: "flex",
+              fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
             }}
           >
             {formatSymbol(symbol)} Perpetual
@@ -93,7 +94,7 @@ export async function GET(request) {
             </span>
           </div>
 
-          {/* 盈利百分比 - 加粗且使用更醒目的字体 */}
+          {/* 盈利百分比 - 使用圆润字体 */}
           <div
             style={{
               position: "absolute",
@@ -103,13 +104,13 @@ export async function GET(request) {
               fontSize: "55px",
               fontWeight: "900",
               display: "flex",
-              fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+              fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
             }}
           >
             {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
           </div>
 
-          {/* 价格数值 - 横向排列 */}
+          {/* 价格数值 - 横向排列，移除Entry/Price字样 */}
           <div
             style={{
               position: "absolute",
@@ -126,15 +127,10 @@ export async function GET(request) {
               gap: "4px",
             }}>
               <div style={{ 
-                color: "#a0a0c0", 
-                fontSize: "16px",
-              }}>
-                Entry
-              </div>
-              <div style={{ 
                 color: "#ffffff", 
                 fontSize: "22px",
                 fontWeight: "bold",
+                fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
               }}>
                 {entry}
               </div>
@@ -145,15 +141,10 @@ export async function GET(request) {
               gap: "4px",
             }}>
               <div style={{ 
-                color: "#a0a0c0", 
-                fontSize: "16px",
-              }}>
-                Price
-              </div>
-              <div style={{ 
                 color: "#ffffff", 
                 fontSize: "22px",
                 fontWeight: "bold",
+                fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
               }}>
                 {priceDisplay}
               </div>
