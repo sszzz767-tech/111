@@ -40,11 +40,17 @@ function getDirection(text) {
   return direction ? direction.replace(/[^多头空头]/g, '') : null;
 }
 
-// 新增：方向翻译函数
+// 方向翻译函数 - 添加详细调试
 function translateDirection(direction) {
-  if (direction === "多头") return "Long";
-  if (direction === "空头") return "Short";
-  return direction || "-"; // 如果既不是多头也不是空头，返回原值或默认值
+  console.log("=== translateDirection Debug ===");
+  console.log("Input direction:", direction);
+  let result;
+  if (direction === "多头") result = "Long";
+  else if (direction === "空头") result = "Short";
+  else result = direction || "Long";
+  console.log("Output direction:", result);
+  console.log("=== End translateDirection Debug ===");
+  return result;
 }
 
 function getLatestPrice(text) {
@@ -226,7 +232,16 @@ function getImagePrice(rawData, entryPrice) {
 function generateImageURL(params) {
   const { status, symbol, direction, price, entry, profit, BASE } = params;
   const cleanSymbol = symbol ? symbol.replace(/[^a-zA-Z0-9.]/g, '') : '';
-  const cleanDirection = direction ? direction.replace(/[^a-zA-Z]/g, '') : ''; // 修改：只保留英文字母
+  
+  // 确保方向是英文
+  let cleanDirection;
+  if (direction === "多头" || direction === "Long") {
+    cleanDirection = "Long";
+  } else if (direction === "空头" || direction === "Short") {
+    cleanDirection = "Short";
+  } else {
+    cleanDirection = direction ? direction.replace(/[^a-zA-Z]/g, '') : 'Long';
+  }
   
   const qs = new URLSearchParams({
     status: status || "",
@@ -238,7 +253,19 @@ function generateImageURL(params) {
     _t: Date.now().toString()
   }).toString();
 
-  return `${BASE}/api/card-image?${qs}`;
+  const imageUrl = `${BASE}/api/card-image?${qs}`;
+  
+  console.log("=== Generated Image URL Debug ===");
+  console.log("Base URL:", BASE);
+  console.log("Full Image URL:", imageUrl);
+  console.log("Parameters:", {
+    status, symbol, direction, price, entry, profit
+  });
+  console.log("Cleaned direction:", cleanDirection);
+  console.log("Query String:", qs);
+  console.log("=== End Image URL Debug ===");
+  
+  return imageUrl;
 }
 
 const dingtalkEmojis = {
@@ -344,7 +371,7 @@ async function sendToDiscord(messageData, rawData, messageType, imageUrl = null)
       console.log("=== Regenerating Discord image URL ===");
       const symbol = getSymbol(rawData);
       const rawDirection = getDirection(rawData);
-      const direction = translateDirection(rawDirection); // 翻译方向
+      const translatedDirection = translateDirection(rawDirection); // 翻译方向并保存到新变量
       const entryPrice = getNum(rawData, "开仓价格");
       
       const correctPrice = getImagePrice(rawData, entryPrice);
@@ -358,14 +385,20 @@ async function sendToDiscord(messageData, rawData, messageType, imageUrl = null)
       console.log("Regenerated parameters:");
       console.log("- status:", status);
       console.log("- symbol:", symbol);
-      console.log("- direction:", direction);
+      console.log("- translatedDirection:", translatedDirection);
       console.log("- correctPrice:", correctPrice);
       console.log("- entryPrice:", entryPrice);
       console.log("- profitPercent:", profitPercent);
 
       const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
       const discordImageUrl = generateImageURL({
-        status, symbol, direction, price: correctPrice, entry: entryPrice, profit: profitPercent, BASE
+        status, 
+        symbol, 
+        direction: translatedDirection, // 使用翻译后的方向
+        price: correctPrice, 
+        entry: entryPrice, 
+        profit: profitPercent, 
+        BASE
       });
 
       console.log("Original image URL:", imageUrl);
@@ -428,7 +461,7 @@ function formatForEnglishDiscord(raw) {
 
   const symbol = getSymbol(text);
   const rawDirection = getDirection(text);
-  const direction = translateDirection(rawDirection); // 翻译方向
+  const translatedDirection = translateDirection(rawDirection); // 翻译方向并保存到新变量
   const entryFromText = getNum(text, "开仓价格");
   const stopPrice = getNum(text, "止损价格");
 
@@ -450,13 +483,25 @@ function formatForEnglishDiscord(raw) {
       profitPercent = calcAbsProfitPct(entryPrice, triggerPrice);
     }
     
-    body = "🎉 TP2 Reached 🎉\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
+    body = "🎉 TP2 Reached 🎉\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${translatedDirection}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 TP2 Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       `📈 Profit: ${profitPercent != null ? Math.round(profitPercent) : "-"}%\n\n` + "✅ Position Fully Closed\n\n";
 
     try {
       const latestPrice = getImagePrice(text, entryPrice);
-      const imageUrl = generateImageURL({ status: "TP2", symbol, direction, price: latestPrice, entry: entryPrice, profit: profitPercent, BASE });
+      const imageUrl = generateImageURL({ 
+        status: "TP2", 
+        symbol, 
+        direction: translatedDirection, // 使用翻译后的方向
+        price: latestPrice, 
+        entry: entryPrice, 
+        profit: profitPercent, 
+        BASE 
+      });
+      console.log("=== FormatForEnglishDiscord Image URL ===");
+      console.log("Image URL for message:", imageUrl);
+      console.log("Direction used:", translatedDirection);
+      console.log("=== End FormatForEnglishDiscord Image URL ===");
       body += `![Trading Chart](${imageUrl})\n\n`;
     } catch (error) {
       console.error("Error generating image:", error);
@@ -465,13 +510,25 @@ function formatForEnglishDiscord(raw) {
     if (profitPercent == null && entryPrice != null && triggerPrice != null) {
       profitPercent = calcAbsProfitPct(entryPrice, triggerPrice);
     }
-    body = "✨ TP1 Reached ✨\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
+    body = "✨ TP1 Reached ✨\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${translatedDirection}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 TP1 Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       `📈 Profit: ${profitPercent != null ? Math.round(profitPercent) : "-"}%\n\n`;
 
     try {
       const latestPrice = getImagePrice(text, entryPrice);
-      const imageUrl = generateImageURL({ status: "TP1", symbol, direction, price: latestPrice, entry: entryPrice, profit: profitPercent, BASE });
+      const imageUrl = generateImageURL({ 
+        status: "TP1", 
+        symbol, 
+        direction: translatedDirection, // 使用翻译后的方向
+        price: latestPrice, 
+        entry: entryPrice, 
+        profit: profitPercent, 
+        BASE 
+      });
+      console.log("=== FormatForEnglishDiscord Image URL ===");
+      console.log("Image URL for message:", imageUrl);
+      console.log("Direction used:", translatedDirection);
+      console.log("=== End FormatForEnglishDiscord Image URL ===");
       body += `![Trading Chart](${imageUrl})\n\n`;
     } catch (error) {
       console.error("Error generating image:", error);
@@ -483,24 +540,32 @@ function formatForEnglishDiscord(raw) {
       actualProfitPercent = calcAbsProfitPct(entryPrice, triggerPrice);
     }
     
-    body = "🎯 Breakeven Reached 🎯\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
+    body = "🎯 Breakeven Reached 🎯\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${translatedDirection}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 Trigger Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       (positionInfo.position ? `📊 Position: ${positionInfo.position}\n\n` : "") + (positionInfo.leverage ? `⚖️ Leverage: ${positionInfo.leverage}\n\n` : "") + 
       (actualProfitPercent !== null ? `📈 Profit: ${actualProfitPercent.toFixed(2)}%\n\n` : "") + "⚠️ Move stop loss to entry (breakeven)\n\n";
 
     try {
       const latestPrice = getImagePrice(text, entryPrice);
-      const imageUrl = generateImageURL({ status: "BREAKEVEN", symbol, direction, price: latestPrice, entry: entryPrice, profit: actualProfitPercent, BASE });
+      const imageUrl = generateImageURL({ 
+        status: "BREAKEVEN", 
+        symbol, 
+        direction: translatedDirection, // 使用翻译后的方向
+        price: latestPrice, 
+        entry: entryPrice, 
+        profit: actualProfitPercent, 
+        BASE 
+      });
       body += `![Trading Chart](${imageUrl})\n\n`;
     } catch (error) {
       console.error("Error generating image:", error);
     }
   } else if (isBreakevenStop(text)) {
-    body = "🟡 Breakeven Stop Triggered 🟡\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
+    body = "🟡 Breakeven Stop Triggered 🟡\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${translatedDirection}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + "🔄 System Action: Close for protection\n\n" + "✅ Risk Status: Fully transferred\n\n";
   } else if (isInitialStop(text)) {
     const triggerPrice = getNum(text, "触发价格");
-    body = "🔴 Initial Stop Triggered 🔴\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
+    body = "🔴 Initial Stop Triggered 🔴\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${translatedDirection}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 Trigger Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       "🔄 System Action: Stop loss exited\n\n";
   } else if (isEntry(text)) {
@@ -512,7 +577,7 @@ function formatForEnglishDiscord(raw) {
     const tp2Price = getNum(text, "TP2");
     const breakevenPrice = getNum(text, "保本位");
 
-    body = "✅ Entry Signal ✅\n\n" + "🟢 【Entry】 🟢\n\n" + `📈 Symbol: ${symbol ?? "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
+    body = "✅ Entry Signal ✅\n\n" + "🟢 【Entry】 🟢\n\n" + `📈 Symbol: ${symbol ?? "-"}\n\n` + `📊 Direction: ${translatedDirection}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + `🛑 Stop Loss: ${formatPriceSmart(stopPrice)}\n\n` + 
       `🎯 Breakeven: ${formatPriceSmart(breakevenPrice)}\n\n` + `🎯 TP1: ${formatPriceSmart(tp1Price)}\n\n` + 
       `🎯 TP2: ${formatPriceSmart(tp2Price)}\n\n` + `📊 Backtest Days: ${days ?? "-"}\n\n` + 
@@ -559,7 +624,7 @@ export async function POST(req) {
       needImage = true;
       const symbol = getSymbol(processedRaw);
       const rawDirection = getDirection(processedRaw);
-      const direction = translateDirection(rawDirection); // 翻译方向
+      const translatedDirection = translateDirection(rawDirection); // 翻译方向
       const entryPrice = getNum(processedRaw, "开仓价格");
       
       const latestPrice = getImagePrice(processedRaw, entryPrice);
@@ -571,7 +636,15 @@ export async function POST(req) {
       if (isBreakeven(processedRaw)) status = "BREAKEVEN";
 
       const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
-      imageUrl = generateImageURL({ status, symbol, direction, price: latestPrice, entry: entryPrice, profit: profitPercent, BASE });
+      imageUrl = generateImageURL({ 
+        status, 
+        symbol, 
+        direction: translatedDirection, // 使用翻译后的方向
+        price: latestPrice, 
+        entry: entryPrice, 
+        profit: profitPercent, 
+        BASE 
+      });
       console.log("Generated image URL:", imageUrl);
     }
 
@@ -582,7 +655,7 @@ export async function POST(req) {
         if (USE_RELAY_SERVICE) {
           console.log("Using relay service to send message to DingTalk...");
           const rawDirection = getDirection(processedRaw);
-          const direction = translateDirection(rawDirection); // 翻译方向
+          const translatedDirection = translateDirection(rawDirection); // 翻译方向
           
           const relayPayload = {
             message: formattedMessage, 
@@ -590,7 +663,7 @@ export async function POST(req) {
             imageParams: imageUrl ? {
               status: messageType, 
               symbol: getSymbol(processedRaw), 
-              direction: direction, // 使用翻译后的方向
+              direction: translatedDirection, // 使用翻译后的方向
               price: getImagePrice(processedRaw, getNum(processedRaw, "开仓价格")), 
               entry: getNum(processedRaw, "开仓价格"),
               profit: extractProfitPctFromText(processedRaw)
