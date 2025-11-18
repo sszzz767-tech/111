@@ -50,7 +50,7 @@ export async function GET(request) {
             flexDirection: "column",
             backgroundColor: "#0a0e17",
             backgroundImage: `url(${backgroundImageUrl})`,
-            backgroundSize: "80% 80%",
+            backgroundSize: "cover",
             backgroundPosition: "center",
             fontFamily: '"PingFang SC", "Helvetica Neue", Arial, sans-serif',
             padding: "15px",
