@@ -32,7 +32,7 @@ export async function GET(request) {
     // 根据方向设置颜色和文本
     let directionText = "Long";
     let directionColor = "#00ff88";
-    if (direction === "Short" || direction === "Long") {
+    if (direction === "Short" || direction === "Sell") {
       directionText = "Short";
       directionColor = "#ff4757";
     }
@@ -58,7 +58,7 @@ export async function GET(request) {
             overflow: "hidden",
           }}
         >
-          {/* 交易对信息 - 单独一行 */}
+          {/* 交易对信息 */}
           <div
             style={{
               position: "absolute",
@@ -70,65 +70,93 @@ export async function GET(request) {
               display: "flex",
             }}
           >
-            {symbol.replace('.P', '')} Perpetual
+            {formatSymbol(symbol)} Perpetual
           </div>
 
-          {/* 方向和杠杆 - 单独一行 */}
+          {/* 方向和杠杆 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
-              top: "180px",
+              top: "190px",
               fontSize: "22px",
               fontWeight: "bold",
-              color: directionColor,
               display: "flex",
+              gap: "8px",
             }}
           >
-            {directionText} x75
+            <span style={{ color: directionColor }}>
+              {directionText}
+            </span>
+            <span style={{ color: "#ffffff" }}>
+              75x
+            </span>
           </div>
 
-          {/* 盈利百分比 - 加粗 */}
+          {/* 盈利百分比 - 加粗且使用更醒目的字体 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
-              top: "320x",
+              top: "320px",
               color: profitColor,
-              fontSize: "40px",
-              fontWeight: "bold",
+              fontSize: "48px",
+              fontWeight: "900",
               display: "flex",
+              fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
             }}
           >
             {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
           </div>
 
-          {/* 价格数值 - 上下排列 */}
+          {/* 价格数值 - 横向排列 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
               top: "520px",
               display: "flex",
-              flexDirection: "column",
-              gap: "8px",
+              flexDirection: "row",
+              gap: "30px",
             }}
           >
             <div style={{ 
               display: "flex",
-              color: "#b8b800", 
-              fontSize: "22px",
-              fontWeight: "bold",
+              flexDirection: "column",
+              gap: "4px",
             }}>
-              Entry: {entry}
+              <div style={{ 
+                color: "#a0a0c0", 
+                fontSize: "16px",
+              }}>
+                Entry
+              </div>
+              <div style={{ 
+                color: "#ffffff", 
+                fontSize: "22px",
+                fontWeight: "bold",
+              }}>
+                {entry}
+              </div>
             </div>
             <div style={{ 
               display: "flex",
-              color: "#b8b800", 
-              fontSize: "22px",
-              fontWeight: "bold",
+              flexDirection: "column",
+              gap: "4px",
             }}>
-              Price: {priceDisplay}
+              <div style={{ 
+                color: "#a0a0c0", 
+                fontSize: "16px",
+              }}>
+                Price
+              </div>
+              <div style={{ 
+                color: "#ffffff", 
+                fontSize: "22px",
+                fontWeight: "bold",
+              }}>
+                {priceDisplay}
+              </div>
             </div>
           </div>
 
@@ -168,6 +196,24 @@ export async function GET(request) {
       }
     );
   }
+}
+
+// 辅助函数：格式化交易对符号
+function formatSymbol(symbol) {
+  if (!symbol) return "ETHUSDT";
+  
+  // 移除 .P 后缀
+  let formatted = symbol.replace('.P', '');
+  
+  // 确保以 USDT 结尾
+  if (!formatted.endsWith('USDT')) {
+    // 如果符号不包含 USDT，添加 USDT
+    if (!formatted.includes('USDT')) {
+      formatted = formatted + 'USDT';
+    }
+  }
+  
+  return formatted;
 }
 
 // 辅助函数：格式化价格
