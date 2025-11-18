@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from "next/server";
 
 const DINGTALK_WEBHOOK = process.env.DINGTALK_WEBHOOK || "0";
