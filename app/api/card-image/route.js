@@ -113,10 +113,10 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "575px",
+              top: "585px",
               display: "flex",
               flexDirection: "row",
-              gap: "245px",
+              gap: "240px",
             }}
           >
             <div style={{ 
