@@ -1,5 +1,3 @@
-[file name]: 消息.txt
-[file content begin]
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from "next/server";
