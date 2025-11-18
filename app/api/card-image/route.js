@@ -78,11 +78,11 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "335px",
-              fontSize: "22px",
+              top: "350px",
+              fontSize: "23px",
               fontWeight: "bold",
               display: "flex",
-              gap: "15px",
+              gap: "23px",
             }}
           >
             <span style={{ color: directionColor }}>
@@ -98,9 +98,9 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "400px",
+              top: "425px",
               color: profitColor,
-              fontSize: "48px",
+              fontSize: "50px",
               fontWeight: "900",
               display: "flex",
               fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
@@ -117,7 +117,7 @@ export async function GET(request) {
               top: "565px",
               display: "flex",
               flexDirection: "row",
-              gap: "220px",
+              gap: "240px",
             }}
           >
             <div style={{ 
@@ -168,7 +168,7 @@ export async function GET(request) {
               bottom: "10px",
               transform: "translateX(-50%)",
               color: "#a0a0c0",
-              fontSize: "16px",
+              fontSize: "23px",
               display: "flex",
             }}
           >
