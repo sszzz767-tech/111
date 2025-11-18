@@ -63,7 +63,7 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "85px",
+              top: "160px",
               fontSize: "22px",
               fontWeight: "bold",
               color: "#ffffff",
@@ -78,7 +78,7 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "115px",
+              top: "180px",
               fontSize: "22px",
               fontWeight: "bold",
               color: directionColor,
@@ -93,7 +93,7 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "140px",
+              top: "320x",
               color: profitColor,
               fontSize: "40px",
               fontWeight: "bold",
@@ -108,7 +108,7 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "220px",
+              top: "520px",
               display: "flex",
               flexDirection: "column",
               gap: "8px",
