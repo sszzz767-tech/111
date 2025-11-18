@@ -52,24 +52,22 @@ export async function GET(request) {
             backgroundImage: `url(${backgroundImageUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            fontFamily: '"PingFang SC", "Helvetica Neue", Arial, sans-serif',
+            fontFamily: 'Arial, sans-serif',
             padding: "15px",
             position: "relative",
             overflow: "hidden",
           }}
         >
-          {/* 交易对信息 - 使用更圆润的字体 */}
+          {/* 交易对信息 - 使用简单字体但增加大小和字重 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
               top: "295px",
-              fontSize: "32px",
-              fontWeight: "900", // 使用最大字重
+              fontSize: "34px",
+              fontWeight: "700",
               color: "#ffffff",
               display: "flex",
-              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
-              textShadow: "1px 1px 2px rgba(0,0,0,0.3)", // 添加轻微阴影增强立体感
             }}
           >
             {formatSymbol(symbol)} Perpetual
@@ -81,11 +79,10 @@ export async function GET(request) {
               position: "absolute",
               left: "45px",
               top: "350px",
-              fontSize: "23px",
-              fontWeight: "900", // 增加字重
+              fontSize: "24px",
+              fontWeight: "700",
               display: "flex",
-              gap: "28px",
-              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", Arial, sans-serif',
+              gap: "27px",
             }}
           >
             <span style={{ color: directionColor }}>
@@ -96,46 +93,40 @@ export async function GET(request) {
             </span>
           </div>
 
-          {/* 盈利百分比 - 使用更圆润的字体并增强效果 */}
+          {/* 盈利百分比 - 使用更清晰的效果 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
               top: "425px",
               color: profitColor,
-              fontSize: "60px", // 稍微增大字体
-              fontWeight: "900", // 最大字重
+              fontSize: "58px",
+              fontWeight: "800",
               display: "flex",
-              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
-              textShadow: "2px 2px 4px rgba(0,0,0,0.5)", // 更强的阴影
-              letterSpacing: "1px", // 稍微增加字母间距
             }}
           >
             {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
           </div>
 
-          {/* 价格数值 - 横向排列，移除Entry/Price字样 */}
+          {/* 价格数值 - 横向排列 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
-              top: "590px",
+              top: "575px",
               display: "flex",
               flexDirection: "row",
-              gap: "236px",
+              gap: "245px",
             }}
           >
             <div style={{ 
               display: "flex",
               flexDirection: "column",
-              gap: "4px",
             }}>
               <div style={{ 
                 color: "#ffffff", 
-                fontSize: "24px", // 稍微增大
-                fontWeight: "900", // 最大字重
-                fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
-                textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+                fontSize: "24px",
+                fontWeight: "700",
               }}>
                 {entry}
               </div>
@@ -143,14 +134,11 @@ export async function GET(request) {
             <div style={{ 
               display: "flex",
               flexDirection: "column",
-              gap: "4px",
             }}>
               <div style={{ 
                 color: "#ffffff", 
-                fontSize: "24px", // 稍微增大
-                fontWeight: "900", // 最大字重
-                fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
-                textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+                fontSize: "24px",
+                fontWeight: "700",
               }}>
                 {priceDisplay}
               </div>
@@ -167,7 +155,6 @@ export async function GET(request) {
               color: "#a0a0c0",
               fontSize: "23px",
               display: "flex",
-              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", Arial, sans-serif',
             }}
           >
             Infinity Crypto
