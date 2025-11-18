@@ -32,7 +32,7 @@ export async function GET(request) {
     // 根据方向设置颜色和文本
     let directionText = "Long";
     let directionColor = "#00ff88";
-    if (direction === "Short" || direction === "Sell") {
+    if (direction === "Short" || direction === "Long") {
       directionText = "Short";
       directionColor = "#ff4757";
     }
@@ -58,137 +58,90 @@ export async function GET(request) {
             overflow: "hidden",
           }}
         >
-          {/* 交易对信息组 */}
+          {/* 交易对信息 - 单独一行 */}
           <div
             style={{
-              display: "flex",
               position: "absolute",
               left: "45px",
-              top: "50px",
-              flexDirection: "column",
+              top: "85px",
+              fontSize: "22px",
+              fontWeight: "bold",
+              color: "#ffffff",
+              display: "flex",
             }}
           >
-            <div
-              style={{
-                fontSize: "22px",
-                fontWeight: "bold",
-                color: "#ffffff",
-              }}
-            >
-              {symbol.replace('.P', '')} Perpetual
-            </div>
+            {symbol.replace('.P', '')} Perpetual
           </div>
 
-          {/* 方向和杠杆组 */}
+          {/* 方向和杠杆 - 单独一行 */}
           <div
             style={{
-              display: "flex",
               position: "absolute",
               left: "45px",
-              top: "40px",
-              flexDirection: "column",
+              top: "115px",
+              fontSize: "22px",
+              fontWeight: "bold",
+              color: directionColor,
+              display: "flex",
             }}
           >
-            <div
-              style={{
-                fontSize: "22px",
-                fontWeight: "bold",
-                color: directionColor,
-              }}
-            >
-              {directionText} x75
-            </div>
+            {directionText} x75
           </div>
 
           {/* 盈利百分比 - 加粗 */}
           <div
             style={{
-              display: "flex",
               position: "absolute",
               left: "45px",
-              top: "190px",
+              top: "140px",
               color: profitColor,
               fontSize: "40px",
               fontWeight: "bold",
+              display: "flex",
             }}
           >
             {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
           </div>
 
-          {/* 价格信息组 */}
+          {/* 价格数值 - 上下排列 */}
           <div
             style={{
-              display: "flex",
               position: "absolute",
               left: "45px",
               top: "220px",
+              display: "flex",
               flexDirection: "column",
-              gap: "12px",
+              gap: "8px",
             }}
           >
-            {/* 入场价格 */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div
-                style={{
-                  color: "#a0a0c0",
-                  fontSize: "16px",
-                }}
-              >
-                Entry
-              </div>
-              <div
-                style={{
-                  color: "#b8b800",
-                  fontSize: "22px",
-                  fontWeight: "bold",
-                }}
-              >
-                {entry}
-              </div>
+            <div style={{ 
+              display: "flex",
+              color: "#b8b800", 
+              fontSize: "22px",
+              fontWeight: "bold",
+            }}>
+              Entry: {entry}
             </div>
-
-            {/* 当前价格 */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div
-                style={{
-                  color: "#a0a0c0",
-                  fontSize: "16px",
-                }}
-              >
-                Price
-              </div>
-              <div
-                style={{
-                  color: "#b8b800",
-                  fontSize: "22px",
-                  fontWeight: "bold",
-                }}
-              >
-                {priceDisplay}
-              </div>
+            <div style={{ 
+              display: "flex",
+              color: "#b8b800", 
+              fontSize: "22px",
+              fontWeight: "bold",
+            }}>
+              Price: {priceDisplay}
             </div>
           </div>
 
-          {/* 底部信息 */}
+          {/* 底部信息 - 居中 */}
           <div
             style={{
-              display: "flex",
               position: "absolute",
               left: "50%",
-              bottom: "20px",
+              bottom: "10px",
               transform: "translateX(-50%)",
               color: "#a0a0c0",
               fontSize: "16px",
+              display: "flex",
             }}
           >
             Infinity Crypto
