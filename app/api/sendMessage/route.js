@@ -1,3 +1,5 @@
+[file name]: 消息.txt
+[file content begin]
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from "next/server";
@@ -38,6 +40,13 @@ function getSymbol(text) {
 function getDirection(text) {
   const direction = getStr(text, "方向");
   return direction ? direction.replace(/[^多头空头]/g, '') : null;
+}
+
+// 新增：方向翻译函数
+function translateDirection(direction) {
+  if (direction === "多头") return "Long";
+  if (direction === "空头") return "Short";
+  return direction || "-"; // 如果既不是多头也不是空头，返回原值或默认值
 }
 
 function getLatestPrice(text) {
@@ -219,7 +228,7 @@ function getImagePrice(rawData, entryPrice) {
 function generateImageURL(params) {
   const { status, symbol, direction, price, entry, profit, BASE } = params;
   const cleanSymbol = symbol ? symbol.replace(/[^a-zA-Z0-9.]/g, '') : '';
-  const cleanDirection = direction ? direction.replace(/[^多头空头]/g, '') : '';
+  const cleanDirection = direction ? direction.replace(/[^a-zA-Z]/g, '') : ''; // 修改：只保留英文字母
   
   const qs = new URLSearchParams({
     status: status || "",
@@ -258,6 +267,9 @@ async function sendToKook(messageData, rawData, messageType, imageUrl = null) {
 
   try {
     console.log("=== Starting Tencent Cloud KOOK service send ===");
+    const rawDirection = getDirection(rawData);
+    const direction = translateDirection(rawDirection); // 翻译方向
+    
     const kookPayload = {
       channelId: DEFAULT_KOOK_CHANNEL_ID,
       formattedMessage: messageData,
@@ -265,7 +277,7 @@ async function sendToKook(messageData, rawData, messageType, imageUrl = null) {
       imageUrl: imageUrl,
       timestamp: Date.now(),
       symbol: getSymbol(rawData),
-      direction: getDirection(rawData)
+      direction: direction // 使用翻译后的方向
     };
 
     const response = await fetch(TENCENT_CLOUD_KOOK_URL, {
@@ -333,7 +345,8 @@ async function sendToDiscord(messageData, rawData, messageType, imageUrl = null)
     if (imageUrl) {
       console.log("=== Regenerating Discord image URL ===");
       const symbol = getSymbol(rawData);
-      const direction = getDirection(rawData);
+      const rawDirection = getDirection(rawData);
+      const direction = translateDirection(rawDirection); // 翻译方向
       const entryPrice = getNum(rawData, "开仓价格");
       
       const correctPrice = getImagePrice(rawData, entryPrice);
@@ -416,7 +429,8 @@ function formatForEnglishDiscord(raw) {
   let body = "";
 
   const symbol = getSymbol(text);
-  const direction = getDirection(text) || "-";
+  const rawDirection = getDirection(text);
+  const direction = translateDirection(rawDirection); // 翻译方向
   const entryFromText = getNum(text, "开仓价格");
   const stopPrice = getNum(text, "止损价格");
 
@@ -438,7 +452,7 @@ function formatForEnglishDiscord(raw) {
       profitPercent = calcAbsProfitPct(entryPrice, triggerPrice);
     }
     
-    body = "🎉 TP2 Reached 🎉\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction || "-"}\n\n` + 
+    body = "🎉 TP2 Reached 🎉\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 TP2 Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       `📈 Profit: ${profitPercent != null ? Math.round(profitPercent) : "-"}%\n\n` + "✅ Position Fully Closed\n\n";
 
@@ -453,7 +467,7 @@ function formatForEnglishDiscord(raw) {
     if (profitPercent == null && entryPrice != null && triggerPrice != null) {
       profitPercent = calcAbsProfitPct(entryPrice, triggerPrice);
     }
-    body = "✨ TP1 Reached ✨\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction || "-"}\n\n` + 
+    body = "✨ TP1 Reached ✨\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 TP1 Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       `📈 Profit: ${profitPercent != null ? Math.round(profitPercent) : "-"}%\n\n`;
 
@@ -471,7 +485,7 @@ function formatForEnglishDiscord(raw) {
       actualProfitPercent = calcAbsProfitPct(entryPrice, triggerPrice);
     }
     
-    body = "🎯 Breakeven Reached 🎯\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction || "-"}\n\n` + 
+    body = "🎯 Breakeven Reached 🎯\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 Trigger Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       (positionInfo.position ? `📊 Position: ${positionInfo.position}\n\n` : "") + (positionInfo.leverage ? `⚖️ Leverage: ${positionInfo.leverage}\n\n` : "") + 
       (actualProfitPercent !== null ? `📈 Profit: ${actualProfitPercent.toFixed(2)}%\n\n` : "") + "⚠️ Move stop loss to entry (breakeven)\n\n";
@@ -484,11 +498,11 @@ function formatForEnglishDiscord(raw) {
       console.error("Error generating image:", error);
     }
   } else if (isBreakevenStop(text)) {
-    body = "🟡 Breakeven Stop Triggered 🟡\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction || "-"}\n\n` + 
+    body = "🟡 Breakeven Stop Triggered 🟡\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + "🔄 System Action: Close for protection\n\n" + "✅ Risk Status: Fully transferred\n\n";
   } else if (isInitialStop(text)) {
     const triggerPrice = getNum(text, "触发价格");
-    body = "🔴 Initial Stop Triggered 🔴\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction || "-"}\n\n` + 
+    body = "🔴 Initial Stop Triggered 🔴\n\n" + `📈 Symbol: ${symbol || "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + (triggerPrice ? `🎯 Trigger Price: ${formatPriceSmart(triggerPrice)}\n\n` : "") + 
       "🔄 System Action: Stop loss exited\n\n";
   } else if (isEntry(text)) {
@@ -500,7 +514,7 @@ function formatForEnglishDiscord(raw) {
     const tp2Price = getNum(text, "TP2");
     const breakevenPrice = getNum(text, "保本位");
 
-    body = "✅ Entry Signal ✅\n\n" + "🟢 【Entry】 🟢\n\n" + `📈 Symbol: ${symbol ?? "-"}\n\n` + `📊 Direction: ${direction ?? "-"}\n\n` + 
+    body = "✅ Entry Signal ✅\n\n" + "🟢 【Entry】 🟢\n\n" + `📈 Symbol: ${symbol ?? "-"}\n\n` + `📊 Direction: ${direction}\n\n` +  // 使用翻译后的方向
       `💰 Entry Price: ${formatPriceSmart(entryPrice)}\n\n` + `🛑 Stop Loss: ${formatPriceSmart(stopPrice)}\n\n` + 
       `🎯 Breakeven: ${formatPriceSmart(breakevenPrice)}\n\n` + `🎯 TP1: ${formatPriceSmart(tp1Price)}\n\n` + 
       `🎯 TP2: ${formatPriceSmart(tp2Price)}\n\n` + `📊 Backtest Days: ${days ?? "-"}\n\n` + 
@@ -546,7 +560,8 @@ export async function POST(req) {
     if (isTP1(processedRaw) || isTP2(processedRaw) || isBreakeven(processedRaw)) {
       needImage = true;
       const symbol = getSymbol(processedRaw);
-      const direction = getDirection(processedRaw);
+      const rawDirection = getDirection(processedRaw);
+      const direction = translateDirection(rawDirection); // 翻译方向
       const entryPrice = getNum(processedRaw, "开仓价格");
       
       const latestPrice = getImagePrice(processedRaw, entryPrice);
@@ -568,13 +583,16 @@ export async function POST(req) {
         console.log("Starting DingTalk send...");
         if (USE_RELAY_SERVICE) {
           console.log("Using relay service to send message to DingTalk...");
+          const rawDirection = getDirection(processedRaw);
+          const direction = translateDirection(rawDirection); // 翻译方向
+          
           const relayPayload = {
             message: formattedMessage, 
             needImage, 
             imageParams: imageUrl ? {
               status: messageType, 
               symbol: getSymbol(processedRaw), 
-              direction: getDirection(processedRaw),
+              direction: direction, // 使用翻译后的方向
               price: getImagePrice(processedRaw, getNum(processedRaw, "开仓价格")), 
               entry: getNum(processedRaw, "开仓价格"),
               profit: extractProfitPctFromText(processedRaw)
@@ -656,3 +674,4 @@ export async function GET() {
     timestamp: new Date().toISOString()
   });
 }
+[file content end]
