@@ -38,7 +38,7 @@ export async function GET(request) {
     }
 
     const profitColor = "#00ff88";
-    const backgroundImageUrl = "https://res.cloudinary.com/dtbc3aa1o/image/upload/v1763460536/biii_ubtzty.jpg";
+    const backgroundImageUrl = "https://res.cloudinary.com/dtbc3aa1o/image/upload/c_fill,w_650,h_800,g_auto/v1763460536/biii_ubtzty.jpg";
 
     return new ImageResponse(
       (
@@ -144,7 +144,7 @@ export async function GET(request) {
         </div>
       ),
       {
-        width: 600,
+        width: 650,
         height: 800,
       }
     );
