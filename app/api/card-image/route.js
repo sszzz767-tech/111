@@ -84,7 +84,7 @@ export async function GET(request) {
               fontSize: "23px",
               fontWeight: "900", // 增加字重
               display: "flex",
-              gap: "25px",
+              gap: "28px",
               fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", Arial, sans-serif',
             }}
           >
@@ -119,10 +119,10 @@ export async function GET(request) {
             style={{
               position: "absolute",
               left: "45px",
-              top: "575px",
+              top: "590px",
               display: "flex",
               flexDirection: "row",
-              gap: "240px",
+              gap: "236px",
             }}
           >
             <div style={{ 
