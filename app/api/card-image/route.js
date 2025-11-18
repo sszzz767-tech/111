@@ -61,12 +61,11 @@ export async function GET(request) {
           {/* 交易对信息组 */}
           <div
             style={{
+              display: "flex",
               position: "absolute",
               left: "45px",
-              top: "85px",
-              display: "flex",
+              top: "50px",
               flexDirection: "column",
-              gap: "4px",
             }}
           >
             <div
@@ -83,12 +82,11 @@ export async function GET(request) {
           {/* 方向和杠杆组 */}
           <div
             style={{
+              display: "flex",
               position: "absolute",
               left: "45px",
-              top: "115px",
-              display: "flex",
+              top: "40px",
               flexDirection: "column",
-              gap: "4px",
             }}
           >
             <div
@@ -105,13 +103,13 @@ export async function GET(request) {
           {/* 盈利百分比 - 加粗 */}
           <div
             style={{
+              display: "flex",
               position: "absolute",
               left: "45px",
-              top: "145px",
+              top: "190px",
               color: profitColor,
               fontSize: "40px",
               fontWeight: "bold",
-              display: "flex",
             }}
           >
             {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
@@ -120,10 +118,10 @@ export async function GET(request) {
           {/* 价格信息组 */}
           <div
             style={{
+              display: "flex",
               position: "absolute",
               left: "45px",
               top: "220px",
-              display: "flex",
               flexDirection: "column",
               gap: "12px",
             }}
@@ -133,7 +131,6 @@ export async function GET(request) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "2px",
               }}
             >
               <div
@@ -160,7 +157,6 @@ export async function GET(request) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "2px",
               }}
             >
               <div
@@ -186,13 +182,13 @@ export async function GET(request) {
           {/* 底部信息 */}
           <div
             style={{
+              display: "flex",
               position: "absolute",
               left: "50%",
               bottom: "20px",
               transform: "translateX(-50%)",
               color: "#a0a0c0",
               fontSize: "16px",
-              display: "flex",
             }}
           >
             Infinity Crypto
