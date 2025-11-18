@@ -58,17 +58,18 @@ export async function GET(request) {
             overflow: "hidden",
           }}
         >
-          {/* 交易对信息 - 使用圆润字体 */}
+          {/* 交易对信息 - 使用更圆润的字体 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
               top: "295px",
               fontSize: "32px",
-              fontWeight: "bold",
+              fontWeight: "900", // 使用最大字重
               color: "#ffffff",
               display: "flex",
-              fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+              textShadow: "1px 1px 2px rgba(0,0,0,0.3)", // 添加轻微阴影增强立体感
             }}
           >
             {formatSymbol(symbol)} Perpetual
@@ -81,9 +82,10 @@ export async function GET(request) {
               left: "45px",
               top: "350px",
               fontSize: "23px",
-              fontWeight: "bold",
+              fontWeight: "900", // 增加字重
               display: "flex",
               gap: "25px",
+              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", Arial, sans-serif',
             }}
           >
             <span style={{ color: directionColor }}>
@@ -94,17 +96,19 @@ export async function GET(request) {
             </span>
           </div>
 
-          {/* 盈利百分比 - 使用圆润字体 */}
+          {/* 盈利百分比 - 使用更圆润的字体并增强效果 */}
           <div
             style={{
               position: "absolute",
               left: "45px",
               top: "425px",
               color: profitColor,
-              fontSize: "55px",
-              fontWeight: "900",
+              fontSize: "60px", // 稍微增大字体
+              fontWeight: "900", // 最大字重
               display: "flex",
-              fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+              textShadow: "2px 2px 4px rgba(0,0,0,0.5)", // 更强的阴影
+              letterSpacing: "1px", // 稍微增加字母间距
             }}
           >
             {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
@@ -128,9 +132,10 @@ export async function GET(request) {
             }}>
               <div style={{ 
                 color: "#ffffff", 
-                fontSize: "22px",
-                fontWeight: "bold",
-                fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+                fontSize: "24px", // 稍微增大
+                fontWeight: "900", // 最大字重
+                fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+                textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
               }}>
                 {entry}
               </div>
@@ -142,9 +147,10 @@ export async function GET(request) {
             }}>
               <div style={{ 
                 color: "#ffffff", 
-                fontSize: "22px",
-                fontWeight: "bold",
-                fontFamily: '"Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+                fontSize: "24px", // 稍微增大
+                fontWeight: "900", // 最大字重
+                fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif',
+                textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
               }}>
                 {priceDisplay}
               </div>
@@ -161,6 +167,7 @@ export async function GET(request) {
               color: "#a0a0c0",
               fontSize: "23px",
               display: "flex",
+              fontFamily: '"Comic Sans MS", "Arial Rounded MT Bold", Arial, sans-serif',
             }}
           >
             Infinity Crypto
