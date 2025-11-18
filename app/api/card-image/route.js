@@ -1,97 +1,93 @@
 export async function GET(request) {
   try {
-    // ==================== 添加调试信息开始 ====================
-    console.log("=== 图片生成详细调试 ===");
-    console.log("完整请求URL:", request.url);
+    // ==================== Debug Info ====================
+    console.log("=== Image Generation Debug ===");
+    console.log("Full Request URL:", request.url);
     const { searchParams } = new URL(request.url);
-    console.log("所有查询参数:");
+    console.log("All Query Parameters:");
     console.log("- status:", searchParams.get("status"));
     console.log("- symbol:", searchParams.get("symbol"));
     console.log("- direction:", searchParams.get("direction"));
-    console.log("- price参数:", searchParams.get("price"), "(原始值)");
-    console.log("- entry参数:", searchParams.get("entry"), "(原始值)");
-    console.log("- profit参数:", searchParams.get("profit"));
-    console.log("- time参数:", searchParams.get("time"));
-    console.log("- _t参数:", searchParams.get("_t"));
-    // ==================== 添加调试信息结束 ====================
+    console.log("- price param:", searchParams.get("price"), "(raw value)");
+    console.log("- entry param:", searchParams.get("entry"), "(raw value)");
+    console.log("- profit param:", searchParams.get("profit"));
+    console.log("- _t param:", searchParams.get("_t"));
+    // ==================== Debug Info End ====================
 
-    console.log("收到图片生成请求");
-    console.log("查询参数:", Object.fromEntries(searchParams.entries()));
+    console.log("Received image generation request");
+    console.log("Query parameters:", Object.fromEntries(searchParams.entries()));
 
-    // 在图片生成代码中，修改参数获取部分：
+    // Get query parameters - fixed price parameter handling
+    const status = searchParams.get("status") || "ENTRY";
+    const symbol = searchParams.get("symbol") || "ETHUSDT.P";
+    const direction = searchParams.get("direction") || "Buy";
 
-// 获取查询参数 - 修复price参数处理
-const status = searchParams.get("status") || "ENTRY";
-const symbol = searchParams.get("symbol") || "ETHUSDT.P";
-const direction = searchParams.get("direction") || "买";
+    // Fix: Ensure price parameter is handled correctly
+    const rawPrice = searchParams.get("price");
+    const rawEntry = searchParams.get("entry");
 
-// 修复：确保price参数正确处理
-const rawPrice = searchParams.get("price");
-const rawEntry = searchParams.get("entry");
+    // If price is empty, decide what value to use based on message type
+    let priceDisplay = "-";
+    if (rawPrice) {
+      priceDisplay = formatPriceSmart(rawPrice);
+    } else {
+      // For different status messages, use different default values
+      if (status === "TP1" || status === "TP2") {
+        // For profit messages, if no price, use entry as fallback
+        priceDisplay = formatPriceSmart(rawEntry || "-");
+      } else if (status === "BREAKEVEN") {
+        // For breakeven messages, use trigger price or entry
+        priceDisplay = formatPriceSmart(rawEntry || "-");
+      } else {
+        priceDisplay = "-";
+      }
+    }
 
-// 如果price为空，根据消息类型决定使用什么值
-let priceDisplay = "-";
-if (rawPrice) {
-  priceDisplay = formatPriceSmart(rawPrice);
-} else {
-  // 对于不同状态的消息，使用不同的默认值
-  if (status === "TP1" || status === "TP2") {
-    // 对于止盈消息，如果没有price，使用entry作为备选
-    priceDisplay = formatPriceSmart(rawEntry || "-");
-  } else if (status === "BREAKEVEN") {
-    // 对于保本消息，使用触发价格或entry
-    priceDisplay = formatPriceSmart(rawEntry || "-");
-  } else {
-    priceDisplay = "-";
-  }
-}
+    const entry = formatPriceSmart(rawEntry || "4387.38");
+    const profit = searchParams.get("profit") || "115.18";
 
-const entry = formatPriceSmart(rawEntry || "4387.38");
-const profit = searchParams.get("profit") || "115.18";
-const time = searchParams.get("time") || new Date().toLocaleString('zh-CN');
+    // ==================== Verify Final Display Values ====================
+    console.log("Final Display Values:");
+    console.log("- price display:", priceDisplay);
+    console.log("- entry display:", entry);
 
-// ==================== 验证最终显示的值 ====================
-console.log("最终显示值:");
-console.log("- price显示:", priceDisplay);
-console.log("- entry显示:", entry);
-
-    // 设置图片宽高
+    // Set image dimensions
     const width = 600;
     const height = 350;
 
-    // 根据方向设置颜色和文本
-    let directionText = "买";
-    let directionColor = "#00ff88"; // 绿色
+    // Set colors and text based on direction
+    let directionText = "Buy";
+    let directionColor = "#00ff88"; // Green
     
-    if (direction === "空头" || direction === "卖") {
-      directionText = "卖";
-      directionColor = "#ff4757"; // 红色
+    if (direction === "Short" || direction === "Sell") {
+      directionText = "Sell";
+      directionColor = "#ff4757"; // Red
     }
     
     const profitColor = "#00ff88";
 
-    // 使用 Cloudinary 图片链接
+    // Use Cloudinary image URL
     let backgroundImageUrl = "https://res.cloudinary.com/dtbc3aa1o/image/upload/v1763460536/biii_ubtzty.jpg";
-    console.log("使用背景图片:", backgroundImageUrl);
+    console.log("Using background image:", backgroundImageUrl);
     
-    // 验证图片是否可访问
+    // Verify image accessibility
     let isAccessible = false;
     try {
       isAccessible = await isImageAccessible(backgroundImageUrl);
-      console.log("图片可访问性:", isAccessible);
+      console.log("Image accessibility:", isAccessible);
     } catch (error) {
-      console.error("图片验证出错:", error);
+      console.error("Image validation error:", error);
       isAccessible = false;
     }
     
     if (!isAccessible) {
-      console.error("Cloudinary 图片无法访问，使用备用方案");
+      console.error("Cloudinary image not accessible, using fallback");
       backgroundImageUrl = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMGExZTE3O3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkaWVudCkiIC8+Cjwvc3ZnPg==";
     }
 
-    console.log("开始生成图片响应");
+    console.log("Starting image response generation");
 
-    // 返回图片响应
+    // Return image response
     return new ImageResponse(
       (
         <div
@@ -110,7 +106,7 @@ console.log("- entry显示:", entry);
             overflow: "hidden",
           }}
         >
-          {/* 内容容器 - 明确设置 display: flex */}
+          {/* Content Container - Explicitly set display: flex */}
           <div
             style={{
               display: "flex",
@@ -120,7 +116,7 @@ console.log("- entry显示:", entry);
               position: "relative",
             }}
           >
-            {/* 交易对信息 */}
+            {/* Symbol Information */}
             <div
               style={{
                 position: "absolute",
@@ -141,11 +137,11 @@ console.log("- entry显示:", entry);
               <span style={{ color: "#ffffff" }}>75x</span>
               <span style={{ color: "#ffffff" }}>|</span>
               <span style={{ color: "#ffffff" }}>
-                {symbol.replace('.P', '')} 永续
+                {symbol.replace('.P', '')} Perpetual
               </span>
             </div>
 
-            {/* 盈利百分比 */}
+            {/* Profit Percentage */}
             <div
               style={{
                 position: "absolute",
@@ -160,7 +156,7 @@ console.log("- entry显示:", entry);
               {parseFloat(profit) >= 0 ? "+" : ""}{profit}%
             </div>
 
-            {/* 价格数值 - 上下排列 */}
+            {/* Price Values - Vertical Layout */}
             <div
               style={{
                 position: "absolute",
@@ -177,7 +173,7 @@ console.log("- entry显示:", entry);
                 fontSize: "22px",
                 fontWeight: "bold",
               }}>
-                {entry}
+                Entry: {entry}
               </div>
               <div style={{ 
                 display: "flex",
@@ -185,11 +181,11 @@ console.log("- entry显示:", entry);
                 fontSize: "22px",
                 fontWeight: "bold",
               }}>
-                {price}
+                Price: {priceDisplay}
               </div>
             </div>
 
-            {/* 底部信息 - 居中 */}
+            {/* Bottom Info - Centered */}
             <div
               style={{
                 position: "absolute",
@@ -201,7 +197,7 @@ console.log("- entry显示:", entry);
                 display: "flex",
               }}
             >
-              无限区块AI
+              Infinity Crypto
             </div>
           </div>
         </div>
@@ -215,11 +211,11 @@ console.log("- entry显示:", entry);
       }
     );
   } catch (error) {
-    console.error("生成图片时出错:", error);
+    console.error("Error generating image:", error);
     
     return new Response(
       JSON.stringify({
-        error: "生成图片失败",
+        error: "Image generation failed",
         message: error.message,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       }),
