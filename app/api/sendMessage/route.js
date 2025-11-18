@@ -1,28 +1,17 @@
 import { NextResponse } from "next/server";
 
-const DINGTALK_WEBHOOK = process.env.DINGTALK_WEBHOOK || "";
+const DINGTALK_WEBHOOK = process.env.DINGTALK_WEBHOOK || "0";
 const RELAY_SERVICE_URL = process.env.RELAY_SERVICE_URL || "https://send-todingtalk-pnvjfgztkw.cn-hangzhou.fcapp.run";
 const TENCENT_CLOUD_KOOK_URL = process.env.TENCENT_CLOUD_KOOK_URL || "https://1323960433-epanz6yymx.ap-guangzhou.tencentscf.com";
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const USE_RELAY_SERVICE = process.env.USE_RELAY_SERVICE === "true";
 const SEND_TO_KOOK = process.env.SEND_TO_KOOK === "true";
 const SEND_TO_DISCORD = process.env.SEND_TO_DISCORD === "true";
-const DEFAULT_KOOK_CHANNEL_ID = process.env.DEFAULT_KOOK_CHANNEL_ID || "";
+const DEFAULT_KOOK_CHANNEL_ID = process.env.DEFAULT_KOOK_CHANNEL_ID || "0";
 
 const lastEntryBySymbol = Object.create(null);
 
-function getBeijingTime() {
-  // This function is kept but won't be used in English messages
-  const now = new Date();
-  const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  const year = beijingTime.getUTCFullYear();
-  const month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(beijingTime.getUTCDate()).padStart(2, '0');
-  const hours = String(beijingTime.getUTCHours()).padStart(2, '0');
-  const minutes = String(beijingTime.getUTCMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-}
-
+// Helper Functions
 function toLines(s) {
   return String(s).replace(/,\s*/g, "\n").replace(/\\n/g, "\n");
 }
@@ -174,20 +163,16 @@ function extractPositionInfo(text) {
   };
 }
 
-// Fixed image price function - ensure breakeven also uses closing price
 function getImagePrice(rawData, entryPrice) {
   console.log("=== getImagePrice Detailed Debug ===");
   console.log("Raw data:", rawData);
   
-  // First try to get latest price
   const latestPrice = getLatestPrice(rawData);
   console.log("- Latest price:", latestPrice);
   
-  // For all message types, prioritize getting closing price
   const closingPrice = getNum(rawData, "平仓价格");
   console.log("- Closing price:", closingPrice);
   
-  // Get other trigger prices based on message type
   let triggerPrice = null;
   if (isTP1(rawData)) {
     triggerPrice = getNum(rawData, "TP1价格") || getNum(rawData, "TP1") || closingPrice;
@@ -196,14 +181,11 @@ function getImagePrice(rawData, entryPrice) {
     triggerPrice = getNum(rawData, "TP2价格") || getNum(rawData, "TP2") || closingPrice;
     console.log("- TP2 trigger price:", triggerPrice);
   } else if (isBreakeven(rawData)) {
-    // Fix: breakeven messages also prioritize closing price
     triggerPrice = closingPrice || getNum(rawData, "触发价格") || getNum(rawData, "保本位") || getNum(rawData, "移动止损到保本位");
     console.log("- Breakeven trigger price:", triggerPrice);
     
-    // If trigger price not found in breakeven message, try to extract from text
     if (!triggerPrice) {
       console.log("- Trying to extract price from breakeven message text...");
-      // Try to match formats like "触发价格: 3220.33155" or "保本位: 3220.33155"
       const priceMatch = rawData.match(/(?:平仓价格|触发价格|保本位|移动止损到保本位)\s*[:：]\s*(\d+(?:\.\d+)?)/);
       if (priceMatch) {
         triggerPrice = parseFloat(priceMatch[1]);
@@ -214,13 +196,11 @@ function getImagePrice(rawData, entryPrice) {
   
   console.log("- Entry price:", entryPrice);
   
-  // Price priority: closing price > latest price > trigger price > entry price
   let finalPrice;
   if (closingPrice) {
     finalPrice = closingPrice;
     console.log("- Using closing price as final price");
   } else {
-    // For breakeven messages, prioritize trigger price, then latest price, finally entry price
     if (isBreakeven(rawData)) {
       finalPrice = triggerPrice || latestPrice || entryPrice;
     } else {
@@ -354,7 +334,6 @@ async function sendToDiscord(messageData, rawData, messageType, imageUrl = null)
       const direction = getDirection(rawData);
       const entryPrice = getNum(rawData, "开仓价格");
       
-      // Use fixed price function
       const correctPrice = getImagePrice(rawData, entryPrice);
       const profitPercent = extractProfitPctFromText(rawData) || (entryPrice && correctPrice ? calcAbsProfitPct(entryPrice, correctPrice) : null);
 
@@ -371,9 +350,9 @@ async function sendToDiscord(messageData, rawData, messageType, imageUrl = null)
       console.log("- entryPrice:", entryPrice);
       console.log("- profitPercent:", profitPercent);
 
+      const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
       const discordImageUrl = generateImageURL({
-        status, symbol, direction, price: correctPrice, entry: entryPrice, profit: profitPercent,
-        BASE: "https://nextjs-boilerplate-ochre-nine-90.vercel.app"
+        status, symbol, direction, price: correctPrice, entry: entryPrice, profit: profitPercent, BASE
       });
 
       console.log("Original image URL:", imageUrl);
@@ -450,7 +429,7 @@ function formatForEnglishDiscord(raw) {
     lastEntryBySymbol[symbol] = { entry: entryFromText, t: Date.now() };
   }
 
-  const BASE = "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
+  const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
 
   if (isTP2(text)) {
     if (profitPercent == null && entryPrice != null && triggerPrice != null) {
@@ -528,7 +507,6 @@ function formatForEnglishDiscord(raw) {
     body = toLines(text).replace(/\n/g, "\n\n");
   }
 
-  // Time output removed as requested
   return simplifyEmojis(header + body);
 }
 
@@ -555,7 +533,6 @@ export async function POST(req) {
       return NextResponse.json({ ok: true, skipped: true, reason: "Invalid or empty message" });
     }
 
-    // Use English format for Discord
     const formattedMessage = formatForEnglishDiscord(processedRaw);
     const messageType = getMessageType(processedRaw);
     console.log("Message type:", messageType);
@@ -570,7 +547,6 @@ export async function POST(req) {
       const direction = getDirection(processedRaw);
       const entryPrice = getNum(processedRaw, "开仓价格");
       
-      // Use fixed price function
       const latestPrice = getImagePrice(processedRaw, entryPrice);
       const profitPercent = extractProfitPctFromText(processedRaw) || (entryPrice && latestPrice ? calcAbsProfitPct(entryPrice, latestPrice) : null);
 
@@ -579,7 +555,8 @@ export async function POST(req) {
       if (isTP2(processedRaw)) status = "TP2";
       if (isBreakeven(processedRaw)) status = "BREAKEVEN";
 
-      imageUrl = generateImageURL({ status, symbol, direction, price: latestPrice, entry: entryPrice, profit: profitPercent, BASE: "https://nextjs-boilerplate-ochre-nine-90.vercel.app" });
+      const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
+      imageUrl = generateImageURL({ status, symbol, direction, price: latestPrice, entry: entryPrice, profit: profitPercent, BASE });
       console.log("Generated image URL:", imageUrl);
     }
 
@@ -590,30 +567,57 @@ export async function POST(req) {
         if (USE_RELAY_SERVICE) {
           console.log("Using relay service to send message to DingTalk...");
           const relayPayload = {
-            message: formattedMessage, needImage, imageParams: imageUrl ? {
-              status: messageType, symbol: getSymbol(processedRaw), direction: getDirection(processedRaw),
-              price: getImagePrice(processedRaw, getNum(processedRaw, "开仓价格")), entry: getNum(processedRaw, "开仓价格"),
+            message: formattedMessage, 
+            needImage, 
+            imageParams: imageUrl ? {
+              status: messageType, 
+              symbol: getSymbol(processedRaw), 
+              direction: getDirection(processedRaw),
+              price: getImagePrice(processedRaw, getNum(processedRaw, "开仓价格")), 
+              entry: getNum(processedRaw, "开仓价格"),
               profit: extractProfitPctFromText(processedRaw)
-            } : null, dingtalkWebhook: DINGTALK_WEBHOOK
+            } : null, 
+            dingtalkWebhook: DINGTALK_WEBHOOK
           };
           console.log("Relay service request payload:", relayPayload);
-          const relayResponse = await fetch(RELAY_SERVICE_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(relayPayload) });
+          const relayResponse = await fetch(RELAY_SERVICE_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(relayPayload) 
+          });
           const relayData = await relayResponse.json();
           console.log("Relay service response:", relayData);
           if (!relayData.success) throw new Error(relayData.error || "Relay service returned error");
           return { ok: true, relayData, method: "relay" };
         } else {
           console.log("Direct send to DingTalk...");
-          const markdown = { msgtype: "markdown", markdown: { title: "Trading Notification", text: formattedMessage }, at: { isAtAll: false } };
+          const markdown = { 
+            msgtype: "markdown", 
+            markdown: { 
+              title: "Trading Notification", 
+              text: formattedMessage 
+            }, 
+            at: { isAtAll: false } 
+          };
           console.log("Message content:", markdown.markdown.text);
-          const resp = await fetch(DINGTALK_WEBHOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(markdown) });
+          const resp = await fetch(DINGTALK_WEBHOOK, { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(markdown) 
+          });
           const data = await resp.json().catch(() => ({}));
           console.log("DingTalk response:", data);
           return { ok: true, dingTalk: data, method: "direct" };
         }
       })(),
-      (async () => { console.log("Starting KOOK send..."); return await sendToKook(formattedMessage, processedRaw, messageType, imageUrl); })(),
-      (async () => { console.log("Starting Discord send..."); return await sendToDiscord(formattedMessage, processedRaw, messageType, imageUrl); })()
+      (async () => { 
+        console.log("Starting KOOK send..."); 
+        return await sendToKook(formattedMessage, processedRaw, messageType, imageUrl); 
+      })(),
+      (async () => { 
+        console.log("Starting Discord send..."); 
+        return await sendToDiscord(formattedMessage, processedRaw, messageType, imageUrl); 
+      })()
     ]);
 
     const results = {
@@ -627,9 +631,26 @@ export async function POST(req) {
     console.log("KOOK result:", results.kook);
     console.log("Discord result:", results.discord);
 
-    return NextResponse.json({ ok: true, results, method: USE_RELAY_SERVICE ? "relay" : "direct" });
+    return NextResponse.json({ 
+      ok: true, 
+      results, 
+      method: USE_RELAY_SERVICE ? "relay" : "direct" 
+    });
   } catch (e) {
     console.error("Error processing request:", e);
-    return NextResponse.json({ ok: false, error: String(e?.message || e) }, { status: 500 });
+    return NextResponse.json({ 
+      ok: false, 
+      error: String(e?.message || e) 
+    }, { 
+      status: 500 
+    });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ 
+    status: "OK", 
+    message: "Infinity Crypto AI Trading Webhook is running",
+    timestamp: new Date().toISOString()
+  });
 }
