@@ -82,7 +82,7 @@ export async function GET(request) {
               fontSize: "24px",
               fontWeight: "700",
               display: "flex",
-              gap: "30px",
+              gap: "33px",
             }}
           >
             <span style={{ color: directionColor }}>
@@ -116,7 +116,7 @@ export async function GET(request) {
               top: "595px",
               display: "flex",
               flexDirection: "row",
-              gap: "245px",
+              gap: "240px",
             }}
           >
             <div style={{ 
