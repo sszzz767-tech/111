@@ -390,7 +390,7 @@ async function sendToDiscord(messageData, rawData, messageType, imageUrl = null)
       console.log("- entryPrice:", entryPrice);
       console.log("- profitPercent:", profitPercent);
 
-      const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
+      const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://111-nine-ecru.vercel.app";
       const discordImageUrl = generateImageURL({
         status, 
         symbol, 
@@ -476,7 +476,7 @@ function formatForEnglishDiscord(raw) {
     lastEntryBySymbol[symbol] = { entry: entryFromText, t: Date.now() };
   }
 
-  const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
+  const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://111-nine-ecru.vercel.app";
 
   if (isTP2(text)) {
     if (profitPercent == null && entryPrice != null && triggerPrice != null) {
@@ -635,7 +635,7 @@ export async function POST(req) {
       if (isTP2(processedRaw)) status = "TP2";
       if (isBreakeven(processedRaw)) status = "BREAKEVEN";
 
-      const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://nextjs-boilerplate-ochre-nine-90.vercel.app";
+      const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://111-nine-ecru.vercel.app";
       imageUrl = generateImageURL({ 
         status, 
         symbol, 
